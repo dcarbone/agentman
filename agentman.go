@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/testutil"
-	"log"
 	"math"
 	"net/http"
 	"sync"

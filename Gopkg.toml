@@ -1,4 +1,4 @@
-# here for when freeport is in a release
+# i cannot wait for porter to be gone.
 [[constraint]]
     name="github.com/hashicorp/consul"
-    branch="master"
+    version="v1.0.0"

@@ -1,0 +1,27 @@
+language: go
+
+dist: trusty
+
+go:
+  - 1.9.x
+
+branches:
+  only:
+    - master
+
+sudo: false
+
+install:
+  - wget "https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip"
+  - mkdir -p $HOME/bin
+  - tar -vxz -C $HOME/bin --strip=1 -f glide-v0.12.3-linux-amd64.tar.gz
+  - unzip -d $HOME/bin consul_1.0.0_linux_amd64.zip
+  - export PATH="$HOME/bin:$PATH"
+  - dep ensure -v
+  - go get github.com/hashicorp/consul/test/porter/cmd/porter
+
+before_script:
+  - go vet ./
+
+script:
+  - $GOPATH/bin/porter go test -v
