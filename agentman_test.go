@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	InstName1 = "test-inst-1"
+	InstanceName1 = "test-instance-1"
 
 	ClusterName1 = "test-cluster-1"
 )
@@ -28,11 +28,15 @@ func TestTestInstance(t *testing.T) {
 	var err error
 
 	t.Run("New", func(t *testing.T) {
-		inst, err = agentman.NewTestInstance(InstName1, shutup)
+		inst, err = agentman.NewTestInstance(InstanceName1, shutup)
 		if nil != err {
 			t.Logf("Error during NewTestInstance(): %s", err)
 			t.FailNow()
 		}
+	})
+
+	t.Run("Named", func(t *testing.T) {
+
 	})
 
 	if inst != nil {
