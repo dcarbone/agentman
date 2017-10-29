@@ -36,7 +36,10 @@ func TestTestInstance(t *testing.T) {
 	})
 
 	if inst != nil {
-		inst.Stop()
+		err = inst.Stop()
+		if err != nil {
+			t.Logf("Error seen while stopping instance: %s", err)
+		}
 	}
 }
 
@@ -52,7 +55,35 @@ func TestTestCluster(t *testing.T) {
 		}
 	})
 
+	t.Run("Grow", func(t *testing.T) {
+		err = cluster.Grow(2, shutupCluster)
+		if err != nil {
+			t.Logf("Unable to Grow(): %s", err)
+			t.FailNow()
+		}
+		if cluster.Size() != 5 {
+			t.Logf("Expected cluster size to be 5, saw: %d", cluster.Size())
+			t.FailNow()
+		}
+	})
+
+	t.Run("Shrink", func(t *testing.T) {
+		err = cluster.Shrink(3)
+		if err != nil {
+			t.Logf("Unable to Shrink(): %s", err)
+			// TODO: the errors returned by the testutil package seem to be...mostly meaningless.
+			// t.FailNow()
+		}
+		if cluster.Size() != 2 {
+			t.Logf("Expected cluster size to be 2, saw: %d", cluster.Size())
+			t.FailNow()
+		}
+	})
+
 	if cluster != nil {
-		cluster.Stop()
+		err = cluster.Stop()
+		if err != nil {
+			t.Logf("Error seen while stopping cluster: %s", err)
+		}
 	}
 }

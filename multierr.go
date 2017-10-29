@@ -1,6 +1,7 @@
 package agentman
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -18,19 +19,27 @@ func NewMultiErr() *MultiErr {
 	return me
 }
 
-// Size returns the entire size of this multi error, including nils
+// Size returns the entire size of this multi error
 func (e *MultiErr) Size() int {
 	e.m.Lock()
 	defer e.m.Unlock()
 	return len(e.errs)
 }
 
-// Add will add an error even if nil
+// Add will add an error, ignoring nils
 func (e *MultiErr) Add(err error) {
 	e.m.Lock()
 	defer e.m.Unlock()
 	if err != nil {
 		e.errs = append(e.errs, err)
+	}
+}
+
+func (e *MultiErr) Err() error {
+	if e.Size() == 0 {
+		return nil
+	} else {
+		return errors.New(e.Error())
 	}
 }
 
