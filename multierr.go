@@ -11,25 +11,11 @@ type MultiErr struct {
 	errs []error
 }
 
-func NewMultiErr(err error) *MultiErr {
+func NewMultiErr() *MultiErr {
 	me := &MultiErr{
 		errs: make([]error, 0),
 	}
-	me.Add(err)
 	return me
-}
-
-// ErrCount will return a count of how many of contained errors are not nil
-func (e *MultiErr) ErrCount() int {
-	e.m.Lock()
-	defer e.m.Unlock()
-	errLen := 0
-	for _, err := range e.errs {
-		if err != nil {
-			errLen++
-		}
-	}
-	return errLen
 }
 
 // Size returns the entire size of this multi error, including nils
@@ -43,18 +29,17 @@ func (e *MultiErr) Size() int {
 func (e *MultiErr) Add(err error) {
 	e.m.Lock()
 	defer e.m.Unlock()
-	e.errs = append(e.errs, err)
+	if err != nil {
+		e.errs = append(e.errs, err)
+	}
 }
 
 func (e *MultiErr) Error() string {
 	e.m.Lock()
 	defer e.m.Unlock()
 	errStr := ""
-	for i, err := range e.errs {
-		if err == nil {
-			continue
-		}
-		errStr = fmt.Sprintf("%s %d - %s;", errStr, i, e.errs[i])
+	for _, err := range e.errs {
+		errStr = fmt.Sprintf("%s\n%s;", errStr, err)
 	}
 	return strings.TrimSpace(errStr)
 }

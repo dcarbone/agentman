@@ -1,1 +1,4 @@
-# setting this here for future use...
+# here for when freeport is in a release
+[[constraint]]
+    name="github.com/hashicorp/consul"
+    branch="master"
