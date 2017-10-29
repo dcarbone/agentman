@@ -38,7 +38,7 @@ func NewTestInstance(name string, cb testutil.ServerConfigCallback) (*TestInstan
 	s.client, err = api.NewClient(apiConf)
 	if err != nil {
 		s.server.Stop()
-		return nil, err
+		return nil, fmt.Errorf("error while creating api client for instance %s: %s", name, err)
 	}
 
 	return s, nil
@@ -124,7 +124,11 @@ func (ti *TestInstance) Stop() error {
 	err := ti.server.Stop()
 	ti.server = nil
 	ti.client = nil
-	return err
+
+	if err != nil {
+		return fmt.Errorf("error while stopping instance %s: %s", ti.name, err)
+	}
+	return nil
 }
 
 func (ti *TestInstance) Stopped() bool {
