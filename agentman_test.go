@@ -35,10 +35,6 @@ func TestTestInstance(t *testing.T) {
 		}
 	})
 
-	t.Run("Named", func(t *testing.T) {
-
-	})
-
 	if inst != nil {
 		err = inst.Stop()
 		if err != nil {

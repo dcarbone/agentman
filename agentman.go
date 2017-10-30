@@ -325,31 +325,31 @@ func (cl *TestCluster) Shrink(n uint8) error {
 }
 
 type (
-	Singles  map[string]*TestInstance
-	Clusters map[string]*TestCluster
+	Instances map[string]*TestInstance
+	Clusters  map[string]*TestCluster
 
 	AgentMan struct {
-		m        sync.Mutex
-		singles  Singles
-		clusters Clusters
+		m         sync.Mutex
+		instances Instances
+		clusters  Clusters
 	}
 )
 
 func NewAgentMan() *AgentMan {
 	am := &AgentMan{
-		singles:  make(Singles),
-		clusters: make(Clusters),
+		instances: make(Instances),
+		clusters:  make(Clusters),
 	}
 
 	return am
 }
 
-// NewSingle will attempt to create an un-clustered test instance
-func (am *AgentMan) NewSingle(name string, cb testutil.ServerConfigCallback) (*TestInstance, error) {
+// NewInstance will attempt to create an un-clustered test instance
+func (am *AgentMan) NewInstance(name string, cb testutil.ServerConfigCallback) (*TestInstance, error) {
 	am.m.Lock()
 	defer am.m.Unlock()
-	if _, ok := am.singles[name]; ok {
-		return nil, fmt.Errorf("single \"%s\" already exists", name)
+	if _, ok := am.instances[name]; ok {
+		return nil, fmt.Errorf("instance \"%s\" already exists", name)
 	}
 
 	s, err := NewTestInstance(name, cb)
@@ -357,7 +357,7 @@ func (am *AgentMan) NewSingle(name string, cb testutil.ServerConfigCallback) (*T
 		return nil, err
 	}
 
-	am.singles[name] = s
+	am.instances[name] = s
 	return s, nil
 }
 
@@ -378,11 +378,11 @@ func (am *AgentMan) NewCluster(name string, size uint8, cb ClusterServerConfigCa
 	return cl, nil
 }
 
-// Single will attempt to return a registered non-clustered test instance to you
-func (am *AgentMan) Single(name string) (*TestInstance, bool) {
+// Instance will attempt to return a registered non-clustered test instance to you
+func (am *AgentMan) Instance(name string) (*TestInstance, bool) {
 	am.m.Lock()
 	defer am.m.Unlock()
-	s, ok := am.singles[name]
+	s, ok := am.instances[name]
 	return s, ok
 }
 
@@ -394,16 +394,16 @@ func (am *AgentMan) Cluster(name string) (*TestCluster, bool) {
 	return cl, ok
 }
 
-// StopSingle will attempt to stop a single instance, removing it from this manager
-func (am *AgentMan) StopSingle(name string) error {
+// StopInstance will attempt to stop a single instance, removing it from this manager
+func (am *AgentMan) StopInstance(name string) error {
 	am.m.Lock()
 	defer am.m.Unlock()
 
 	var err error
 
-	if s, ok := am.singles[name]; ok {
+	if s, ok := am.instances[name]; ok {
 		err = s.Stop()
-		delete(am.singles, name)
+		delete(am.instances, name)
 	}
 
 	return err
@@ -424,7 +424,7 @@ func (am *AgentMan) StopCluster(name string) error {
 	return err
 }
 
-// Stop will attempt to stop all currently running singles and clusters, removing all of them from the manager
+// Stop will attempt to stop all currently running instances and clusters, removing all of them from the manager
 func (am *AgentMan) Stop() error {
 	am.m.Lock()
 	defer am.m.Unlock()
@@ -437,7 +437,7 @@ func (am *AgentMan) Stop() error {
 	wg.Add(2)
 
 	go func() {
-		for _, instance := range am.singles {
+		for _, instance := range am.instances {
 			errs.(*MultiErr).Add(instance.Stop())
 		}
 		wg.Done()
@@ -452,7 +452,7 @@ func (am *AgentMan) Stop() error {
 
 	wg.Wait()
 
-	am.singles = make(Singles)
+	am.instances = make(Instances)
 	am.clusters = make(Clusters)
 
 	if errs.(*MultiErr).Size() > 0 {
@@ -460,4 +460,36 @@ func (am *AgentMan) Stop() error {
 	}
 
 	return nil
+}
+
+func (am *AgentMan) InstancesCount() int {
+	am.m.Lock()
+	defer am.m.Unlock()
+	return len(am.instances)
+}
+
+func (am *AgentMan) ClustersCount() int {
+	am.m.Lock()
+	defer am.m.Unlock()
+	return len(am.clusters)
+}
+
+func (am *AgentMan) InstanceNames() []string {
+	am.m.Lock()
+	defer am.m.Unlock()
+	names := make([]string, 0)
+	for name := range am.instances {
+		names = append(names, name)
+	}
+	return names
+}
+
+func (am *AgentMan) ClusterNames() []string {
+	am.m.Lock()
+	defer am.m.Unlock()
+	names := make([]string, 0)
+	for name := range am.instances {
+		names = append(names, name)
+	}
+	return names
 }
