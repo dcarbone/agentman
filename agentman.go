@@ -195,15 +195,13 @@ func NewTestCluster(name string, size uint8, cb ClusterServerConfigCallback) (*T
 
 	err = cl.Grow(size-1, cb)
 	if err != nil {
-		if err != nil {
-			ul := len(cl.instances)
-			if ul > 0 {
-				for u := ul - 1; u >= 0; u-- {
-					cl.instances[u].Stop()
-				}
+		ul := len(cl.instances)
+		if ul > 0 {
+			for u := ul - 1; u >= 0; u-- {
+				cl.instances[u].Stop()
 			}
-			return nil, err
 		}
+		return nil, err
 	}
 
 	return cl, nil
